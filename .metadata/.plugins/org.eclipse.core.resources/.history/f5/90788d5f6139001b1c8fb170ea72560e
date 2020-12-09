@@ -1,0 +1,175 @@
+package br.com.caelum.leilao.teste;
+
+import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.List;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import br.com.caelum.leilao.builder.LeilaoBuilder;
+import br.com.caelum.leilao.dominio.Avaliador;
+import br.com.caelum.leilao.dominio.Lance;
+import br.com.caelum.leilao.dominio.Leilao;
+import br.com.caelum.leilao.dominio.MatematicaMaluca;
+import br.com.caelum.leilao.dominio.Usuario;
+
+class TestaAvaliador {
+
+	private Avaliador avaliador;
+	private Usuario bruno;
+	private Usuario maria;
+	private Usuario marta;
+
+	@BeforeEach
+	void setup() {
+		this.avaliador = new Avaliador();
+		bruno = new Usuario("Bruno");
+		maria = new Usuario("Maria");
+		marta = new Usuario("Marta");
+
+	}
+
+	@BeforeAll
+	public static void testandoBeforeClass() {
+		System.out.println("before class");
+	}
+
+	@AfterAll
+	public static void testandoAfterClass() {
+		System.out.println("after class");
+	}
+
+	@Test
+	void naoPodeAceitarLeilaoSemLance() {
+		
+		 assertThrows(RuntimeException.class, () -> {
+			 avaliador.avalia(new LeilaoBuilder().para("Casa").constroe());
+			  });
+				
+	}
+	
+
+	@Test
+	void test() {
+		Leilao leilao = new LeilaoBuilder().para("Quadro do Bruno").lance(bruno, 50.0).lance(maria, 350.0)
+				.lance(marta, 1000.0).constroe();
+
+		avaliador.avalia(leilao);
+
+		assertThat(avaliador.getMaiorValor(), equalTo(1000.0));
+		assertThat(avaliador.getMenorValor(),equalTo(50.0));
+		assertThat(avaliador.getMedioValor(),equalTo(466.667));
+	}
+
+	@Test
+	void testacomUmLance() {
+
+		Lance lanceBruno = new Lance(bruno, 3550.0);
+
+		Leilao leilao = new Leilao("Xbox Serie X");
+		leilao.propoe(lanceBruno);
+
+		avaliador.avalia(leilao);
+
+		assertThat(avaliador.getMaiorValor(), equalTo(3550.0));
+		assertThat(avaliador.getMenorValor(),equalTo(3550.0));
+		assertThat(avaliador.getMedioValor(),equalTo(3550.0));
+	}
+
+	@Test
+	void testeAleatorio() {
+
+		Leilao leilao = new Leilao("Xbox Serie X");
+		leilao.propoe(new Lance(bruno, 554400.0));
+		leilao.propoe(new Lance(maria, 5.0));
+		leilao.propoe(new Lance(bruno, 7005.0));
+		leilao.propoe(new Lance(maria, 7005.0));
+
+		leilao.propoe(new Lance(bruno, 70505.0));
+		leilao.propoe(new Lance(maria, 1575.0));
+		leilao.propoe(new Lance(bruno, 1005.0));
+
+		leilao.propoe(new Lance(maria, 7.0));
+
+		avaliador.avalia(leilao);
+
+		assertThat(avaliador.getMaiorValor(), equalTo(554400.0));
+		assertThat(avaliador.getMenorValor(),equalTo(5.0));
+
+	}
+
+	@Test
+	public void deveEncontrarOsTresMaioresLances() {
+		Leilao leilao = new Leilao("Playstation 3 Novo");
+
+		leilao.propoe(new Lance(marta, 100.0));
+		leilao.propoe(new Lance(maria, 200.0));
+		leilao.propoe(new Lance(marta, 300.0));
+		leilao.propoe(new Lance(maria, 400.0));
+
+		avaliador.avalia(leilao);
+
+		List<Lance> maiores = avaliador.getTresMaiores();
+
+		assertThat(maiores.size(), equalTo(3));
+		assertThat(maiores, hasItems(
+				new Lance(maria, 400.0),
+				new Lance(marta, 300.0),
+				new Lance(maria, 200.0)
+				
+				));
+		
+	}
+
+	@Test
+	public void deveDevolverTodosLancesCasoNaoHajaNoMinimo3() {
+		Leilao leilao = new Leilao("Playstation 3 Novo");
+
+		leilao.propoe(new Lance(marta, 100.0));
+		leilao.propoe(new Lance(maria, 200.0));
+
+		avaliador.avalia(leilao);
+
+		List<Lance> maiores = avaliador.getTresMaiores();
+
+		assertEquals(2, maiores.size());
+		assertEquals(200, maiores.get(0).getValor());
+		assertEquals(100, maiores.get(1).getValor());
+	}
+
+//	@Test
+//	public void deveDevolverListaVaziaCasoNaoHajaLances() {
+//		Leilao leilao = new Leilao("Playstation 3 Novo");
+//
+//		avaliador.avalia(leilao);
+//
+//		List<Lance> maiores = avaliador.getTresMaiores();
+//
+//		assertEquals(0, maiores.size());
+//	}
+
+	@Test
+	void testaMatematicaMaluca() {
+
+		MatematicaMaluca m = new MatematicaMaluca();
+
+		assertEquals(90, m.contaMaluca(30));
+
+		assertEquals(180, m.contaMaluca(45));
+
+		assertEquals(20, m.contaMaluca(10));
+
+	}
+
+//	@AfterEach
+//	public void finaliza() {
+//		System.out.println("fim");
+//	}
+}

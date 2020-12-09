@@ -1,0 +1,12 @@
+package br.com.caelum.leilao.teste;
+
+import org.junit.jupiter.api.Test;
+
+class AnoBissextoTest {
+
+	@Test
+	void test() {
+		
+	}
+
+}

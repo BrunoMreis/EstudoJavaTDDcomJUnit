@@ -1,0 +1,76 @@
+package br.com.caelum.leilao.dominio;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+public class Leilao {
+
+	private String descricao;
+	private List<Lance> lances;
+
+	public Leilao(String descricao) {
+		this.descricao = descricao;
+		this.lances = new ArrayList<Lance>();
+	}
+
+	public void propoe(Lance lance) {
+
+		int total = qtdDeLancesDo(lance.getUsuario());
+
+		if (lances.isEmpty() || podeDarLance(lance, total)) {
+
+			lances.add(lance);
+		}
+
+	}
+
+	private boolean podeDarLance(Lance lance, int total) {
+		return !lance.getUsuario().equals(ultimoLance()) && total < 5;
+	}
+
+	private Usuario ultimoLance() {
+		return lances.get(lances.size() - 1).getUsuario();
+	}
+
+	private int qtdDeLancesDo(Usuario usuario) {
+		int total = 0;
+		for (Lance l : lances) {
+			if (l.getUsuario().equals(usuario))
+				total++;
+		}
+		return total;
+	}
+
+	public String getDescricao() {
+		return descricao;
+	}
+
+	public List<Lance> getLances() {
+		return Collections.unmodifiableList(lances);
+	}
+
+	public void dobraLance(Usuario usuario) {
+		Lance lance = ultimoLance(usuario);
+		verificaSeNull(lance, usuario);
+		
+
+	}
+	
+	private void verificaSeNull(Lance lance,Usuario usuario) {
+		if(lance != null) {
+			propoe(new Lance(usuario, (lance.getValor() * 2)));
+		}
+	}
+
+	public Lance ultimoLance(Usuario user) {
+		Lance ultimo = null;
+		for (Lance l : lances) {
+			if (l.getUsuario().equals(user))
+				ultimo = l;
+		}
+		return ultimo;
+	}
+
+}
